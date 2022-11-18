@@ -141,19 +141,33 @@ def UFOs_UI(df: pd.DataFrame):
 
             m = folium.Map()
 
-            for lat, lon, name in zip(df_selected['latitude'],
-                                      df_selected['longitude'],
-                                      df_selected['city']):
+            for lat, lon, city, shape, duration, year in zip(
+                df_selected['latitude'],
+                df_selected['longitude'],
+                df_selected['city'],
+                df_selected['shape'],
+                df_selected['duration_seconds'],
+                df_selected['year_UFO']
+            ):
+                
+                #Creating the tooltip
+                tooltip = f"<strong>{city}</strong><br>"
+                popup = f"<strong>Shape:</strong>{shape}<br><strong>Duration:</strong>{duration} seconds<br><strong>Year:</strong>{year}"
+                # Adding "eye-open" icon, created from Bootstrap (https://getbootstrap.com/docs/3.3/components/)
+                icon = 'eye-open'
                 #Creating the marker
                 folium.Marker(
                     #Coordinates of the country
                     location = [lat, lon],
                     #Popup that shows up if click the marker
-                    popup = name
+                    popup = popup,
+                    tooltip = tooltip,
+                    icon = folium.Icon(color='darkred', icon=icon) 
                 ).add_to(m)
-                
+            
             folium_static(m)
-
+            
+            st.info('You can click on a marker to see more details about the corresponding UFO sighting report!', icon="ℹ️")
 
         st.subheader("And you, have you ever seen a UFO? 🧐" )
         df_selected = df
