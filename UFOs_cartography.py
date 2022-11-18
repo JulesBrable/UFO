@@ -100,17 +100,6 @@ def UFOs_UI(df: pd.DataFrame):
                 label_visibility="collapsed"
             )
             df_selected = df_selected.query("@start_duration <= duration_seconds <= @end_duration")
-
-        #durations = st.sidebar.multiselect(
-            #"",
-            #get_var(df_selected, "duration (seconds)"),
-            #key = "key2",
-            #label_visibility="collapsed"
-        #)
-        
-        #if durations is not None:
-            
-            #df_selected = df_selected[df_selected.isin(durations)]
     
     select_range_date = sorted(df_selected['year_UFO'].unique())
     r5 = st.sidebar.radio("Period:", ["All Time", "Select a specific period of time"])
