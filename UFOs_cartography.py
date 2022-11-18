@@ -32,11 +32,12 @@ def get_var(df, var) -> list:
 
 format='%Y-%m-%d %H:%M:%S'
 df['year_UFO'] = pd.DatetimeIndex(pd.to_datetime(df['datetime'], format=format)).year
-select_range = sorted(df['year_UFO'].unique())
 
 #def df_multiselect_query(df: pd.DataFrame) -> pd.DataFrame:
 
 def UFOs_UI(df: pd.DataFrame):
+    
+    df_selected = df.copy()
     
     with header:
         st.header(f"Mapping of UFO sightings reports from {min(df['year_UFO'])} to {max(df['year_UFO'])}")
@@ -44,70 +45,118 @@ def UFOs_UI(df: pd.DataFrame):
     r1 = st.sidebar.radio("Country:", ["All Countries", "Select specific countries"])
     if r1 == "Select specific countries":
         
-        countries = st.sidebar.multiselect("", get_var(df,"country"), label_visibility="collapsed")
+        countries = st.sidebar.multiselect(
+            "",
+            get_var(df_selected,"country"),
+            label_visibility="collapsed"
+        )
         
         if countries is not None:
             
-            df = df.query('(country in @countries)')
+            df_selected = df_selected.query('(country in @countries)')
     
     r2 = st.sidebar.radio("City:", ["All Cities", "Select specific cities"])
     if r2 == "Select specific cities":
         
-        cities = st.sidebar.multiselect("", get_var(df, "city"), label_visibility="collapsed")
+        cities = st.sidebar.multiselect(
+            "",
+            get_var(df_selected, "city"),
+            label_visibility="collapsed"
+        )
         
         if cities is not None:
             
-            df = df.query('(city in @cities)')
+            df_selected = df_selected.query('(city in @cities)')
 
     r3 = st.sidebar.radio("UFO shape:", ["All Shapes", "Select specific shapes"])
     if r3 == "Select specific shapes":
         
-        shapes = st.sidebar.multiselect("", get_var(df, "shape"), key = "key1", label_visibility="collapsed")
+        shapes = st.sidebar.multiselect(
+            "",
+            get_var(df_selected, "shape"),
+            key = "key1",
+            label_visibility="collapsed"
+        )
         
         if shapes is not None:
             
-            df = df.query('(shape in @shapes)')
+            df_selected = df_selected.query('(shape in @shapes)')
 
-    r4 = st.sidebar.radio("Period:", ["All Time", "Select a specific period of time"])
-    
-    if r4 == "Select a specific period of time":
+    select_range_duration = sorted(df_selected['duration_seconds'].unique())       
+    r4 = st.sidebar.radio("Duration of the episode (in seconds):", ["All Durations", "Select a specific duration"])
+    if r4 == "Select a specific duration":
         
-        if min(df['year_UFO'].unique()) == max(df['year_UFO'].unique()):
+        if min(df_selected['duration_seconds'].unique()) == max(df_selected['duration_seconds'].unique()):
             
-            date = st.sidebar.markdown(f"UFOs sightings reports based on your filters were made during a single year only **{set(df['year_UFO'])}**.")
+            durations = st.sidebar.markdown(f"UFOs sightings reports based on your filters contains a single duration only **{set(df_selected['duration_seconds'])}**.")
+            df_selected = df_selected.query("duration_seconds == @durations")
+
+        else:
+            start_duration, end_duration = st.sidebar.select_slider(
+                "Choose a duration range",
+                options=select_range_duration,
+                value=(min(df_selected['duration_seconds'].unique()),
+                       max(df_selected['duration_seconds'].unique())),
+                label_visibility="collapsed"
+            )
+            df_selected = df_selected.query("@start_duration <= duration_seconds <= @end_duration")
+
+        #durations = st.sidebar.multiselect(
+            #"",
+            #get_var(df_selected, "duration (seconds)"),
+            #key = "key2",
+            #label_visibility="collapsed"
+        #)
+        
+        #if durations is not None:
+            
+            #df_selected = df_selected[df_selected.isin(durations)]
+    
+    select_range_date = sorted(df_selected['year_UFO'].unique())
+    r5 = st.sidebar.radio("Period:", ["All Time", "Select a specific period of time"])
+    if r5 == "Select a specific period of time":
+        
+        if min(df_selected['year_UFO'].unique()) == max(df_selected['year_UFO'].unique()):
+            
+            date = st.sidebar.markdown(f"UFOs sightings reports based on your filters were made during a single year only **{set(df_selected['year_UFO'])}**.")
+            df_selected = df_selected.query("year_UFO == @date")
             
         else:
-            start_date, end_date = st.sidebar.select_slider("Choose a date range",
-                                                            options=select_range,
-                                                            value=(min(df['year_UFO'].unique()),
-                                                                   max(df['year_UFO'].unique())),
-                                                           label_visibility="collapsed")
+            start_date, end_date = st.sidebar.select_slider(
+                "Choose a date range",
+                options=select_range_date,
+                value=(min(df_selected['year_UFO'].unique()),
+                       max(df_selected['year_UFO'].unique())),
+                label_visibility="collapsed"
+            )
+            
+            df_selected = df_selected.query("@start_date <= year_UFO <= @end_date")
+
 
     if st.sidebar.button("Submit here 👈"):
         
-        st.balloons()
+        #st.balloons()
     
         with visualization:
 
             m = folium.Map()
 
-            for lat, lon, name in zip(df['latitude'],
-                                      df['longitude'],
-                                      df['city']):
+            for lat, lon, name in zip(df_selected['latitude'],
+                                      df_selected['longitude'],
+                                      df_selected['city']):
                 #Creating the marker
                 folium.Marker(
-                    #Coordinate of the country$
+                    #Coordinates of the country
                     location = [lat, lon],
-                    #The popup that show up if click the marker
+                    #Popup that shows up if click the marker
                     popup = name
                 ).add_to(m)
-                #heat_data = [df['latitude'],df['longitude']]
-                #HeatMap(heat_data).add_to(m)
                 
             folium_static(m)
 
 
         st.subheader("And you, have you ever seen a UFO? 🧐" )
+        df_selected = df
 
 if __name__ == '__main__':
     UFOs_UI(df = df)
