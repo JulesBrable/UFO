@@ -5,3 +5,6 @@ seaborn
 streamlit
 folium
 streamlit_folium
+geopy
+bs4
+requests
