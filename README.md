@@ -1,6 +1,5 @@
 # UFOs sighting reports worldwide
 
-We also want to thank our teachers of Python's class, L.Galiana and C.Laroche.
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
