@@ -5,6 +5,12 @@ import streamlit as st
 from streamlit_folium import folium_static
 import folium
 from functions_app import get_data, clean_col, UFOs_UI
+import io
+from PIL import Image
+import os
+from ipywebrtc import WidgetStream, ImageRecorder
+from ipywidgets.embed import embed_minimal_html
+import branca
 
 if __name__ == '__main__':
     
@@ -35,9 +41,8 @@ if __name__ == '__main__':
     
     cols_list = ['country', 'city', 'shape']
     df[cols_list] = df[cols_list].apply(clean_col)
-
-    format='%Y-%m-%d %H:%M:%S'
-    df['year_UFO'] = pd.DatetimeIndex(pd.to_datetime(df['datetime'], format=format)).year
+    
+    df['year_UFO'] = pd.DatetimeIndex(df['datetime']).year
         
     with st.container():
         
@@ -46,8 +51,3 @@ if __name__ == '__main__':
         )
 
     UFOs_UI(df=df)
-    
-#header = st.container()
-#visualization = st.container()
-
-

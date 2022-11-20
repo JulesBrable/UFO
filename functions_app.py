@@ -4,6 +4,13 @@ import matplotlib.pyplot as plt
 import streamlit as st
 from streamlit_folium import folium_static
 import folium
+import io
+from PIL import Image
+import os
+from ipywebrtc import WidgetStream, ImageRecorder
+from ipywidgets.embed import embed_minimal_html
+import branca
+
 
 def get_data(file):
     
@@ -19,21 +26,52 @@ def get_var(df, var) -> list:
     
     return sorted(list(df[var].unique()))
 
+def popup_html(shape, duration, date):
+    html = """<!DOCTYPE html>
+    <html>
+        <head>
+            <style>
+                p {{
+                  background-color: #00a0a0;
+                  padding: 10px 10px 10px 10px;
+                  border: 2px solid #101357;
+                  border-radius: 5px;
+                }}
+            </style>
+        </head>
+        <body>
+            <p>
+                <strong>Shape:</strong>&nbsp;{shape}
+                <br>
+                <strong>Duration:</strong>&nbsp;{duration}&nbsp;seconds
+                <br>
+                <strong>Date:</strong>&nbsp;{date}
+            </p>
+        </body>
+    </html>""".format(**locals())
+    return html
+
 def create_map(df: pd.DataFrame) -> folium.Map():
     
-    m = folium.Map()
-    for lat, lon, city, shape, duration, year in zip(
+    
+    location = df['latitude'].mean(), df['longitude'].mean()
+    m = folium.Map(location=location, zoom_start=4)
+  
+    for lat, lon, city, shape, duration, date in zip(
         df['latitude'],
         df['longitude'],
         df['city'],
         df['shape'],
         df['duration_seconds'],
-        df['year_UFO']
+        df['datetime']
     ):
         #Creating the tooltip
         tooltip = f"<strong>{city}</strong><br>"
-        popup = f"<strong>Shape:</strong>{shape}<br><strong>Duration:</strong>{duration} seconds<br><strong>Year:</strong>{year}"
-        # Adding "eye-open" icon, created from Bootstrap (https://getbootstrap.com/docs/3.3/components/)
+        #Creating the popup
+        html = popup_html(shape=shape, duration=duration, date=date)
+        iframe = branca.element.IFrame(html=html)
+        popup = folium.Popup(folium.Html(html, script=True), parse_html=True)
+        #Creating "eye-open" icon, from Bootstrap (https://getbootstrap.com/docs/3.3/components/)
         icon = 'eye-open'
         #Creating the marker
         folium.Marker(
@@ -45,7 +83,7 @@ def create_map(df: pd.DataFrame) -> folium.Map():
             icon = folium.Icon(color='darkred', icon=icon)
         ).add_to(m)
         
-    return folium_static(m)
+    return m
       
 def create_multiselect(df: pd.DataFrame, col: str) -> st.multiselect:
     return st.sidebar.multiselect(
@@ -62,6 +100,9 @@ def create_select_slider(df: pd.DataFrame, col: str, measure: str, select_range:
                max(df[col].unique())),
         label_visibility="collapsed"
     )
+
+#def map_to_png(folium_map, file: str):
+    #return folium_map.save(file)
 
 def UFOs_UI(df: pd.DataFrame):
     
@@ -125,7 +166,9 @@ def UFOs_UI(df: pd.DataFrame):
         #st.balloons()
     
         with st.container():
-            create_map(df=df_selected)
+            m=create_map(df=df_selected)
+            folium_static(m)
+            
             st.info('You can click on a marker to see more details about the corresponding UFO sighting report!', icon="ℹ️")
         
         c1, c2 = st.columns([2, 1])
@@ -133,5 +176,39 @@ def UFOs_UI(df: pd.DataFrame):
             st.subheader("And you, have you ever seen a UFO? 🧐" )
         with c2:
             st.image("pictures/et.jpeg", width = 100)
+        
+        
+        #img_data = m._to_png(5)
+        #img = Image.open(io.BytesIO(img_data))
+        #img.save('image.png')
+        #widget_stream = WidgetStream(widget=m, readout_format='')
+        #image_recorder = ImageRecorder(stream=widget_stream)
+        #display(image_recorder)
 
+        st.download_button("Export Map", data=m, file_name=("map.html"))
+
+        #if downlo:
+            #with open('map.png', 'wb') as f:
+                #f.write(image_recorder.image.value)
+        #with open("flower.png", "rb") as file:
+     
+            #btn = st.download_button(
+                #label="Download image",
+                #data=file.write(image_recorder.image.value),
+                #file_name="flower.png",
+                #mime="image/png"
+              #)
+           
+        #map_to_png(folium_map=m, file="map.png")
+        #if export_as_png:
+            #mapFname = "output.html"
+            #m.save(os.path.join(os.getcwd(), mapFname))
+            
+        #st.write(f"{type(m)}")
+        #text_contents = '''This is some text'''
+        #st.download_button('Download some text', text_contents)
+        #map_to_png(folium_map=m, file="map.png)
+        
+            #download_map(folium_map=m)
+        
         df_selected = df
