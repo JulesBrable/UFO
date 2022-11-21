@@ -88,4 +88,4 @@ When the application is launched, the user must make choices from a number of fi
 
 * [Jules Brablé⛑](https://github.com/JulesBrable) - jules.brable@ensae.fr
 * [Antonio Sasaki👑](https://github.com/antoniosasaki) - antonio.sasaki@ensae.fr
-* [Oumar Dione🎩](https://github.com/Oumar-DIONE) - romain.avouac@ensae.fr
+* [Oumar Dione🎩](https://github.com/Oumar-DIONE) - oumar.dione@ensae.fr
