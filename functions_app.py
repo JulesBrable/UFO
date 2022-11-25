@@ -4,11 +4,6 @@ import matplotlib.pyplot as plt
 import streamlit as st
 from streamlit_folium import folium_static
 import folium
-import io
-from PIL import Image
-import os
-from ipywebrtc import WidgetStream, ImageRecorder
-from ipywidgets.embed import embed_minimal_html
 import branca
 
 
@@ -33,6 +28,7 @@ def popup_html(shape, duration, date):
             <style>
                 p {{
                   background-color: #00a0a0;
+                  color: white;
                   padding: 10px 10px 10px 10px;
                   border: 2px solid #101357;
                   border-radius: 5px;
@@ -184,31 +180,18 @@ def UFOs_UI(df: pd.DataFrame):
         #widget_stream = WidgetStream(widget=m, readout_format='')
         #image_recorder = ImageRecorder(stream=widget_stream)
         #display(image_recorder)
-
-        st.download_button("Export Map", data=m, file_name=("map.html"))
-
-        #if downlo:
-            #with open('map.png', 'wb') as f:
-                #f.write(image_recorder.image.value)
-        #with open("flower.png", "rb") as file:
-     
-            #btn = st.download_button(
-                #label="Download image",
-                #data=file.write(image_recorder.image.value),
-                #file_name="flower.png",
-                #mime="image/png"
-              #)
-           
-        #map_to_png(folium_map=m, file="map.png")
-        #if export_as_png:
-            #mapFname = "output.html"
-            #m.save(os.path.join(os.getcwd(), mapFname))
-            
-        #st.write(f"{type(m)}")
-        #text_contents = '''This is some text'''
-        #st.download_button('Download some text', text_contents)
-        #map_to_png(folium_map=m, file="map.png)
+        cols = ['datetime', 'city', 'country', 'shape', 'duration_seconds', 'comments']
+        df_selected = df_selected[cols]
+        st.dataframe(df_selected)
         
-            #download_map(folium_map=m)
+        #@st.cache
+        csv = df_selected.to_csv().encode('utf-8')
+
+        st.download_button(
+            label="Export selected data as CSV",
+            data=csv,
+            file_name='selected_reports.csv',
+            mime='text/csv',
+        )
         
         df_selected = df
