@@ -5,11 +5,6 @@ import streamlit as st
 from streamlit_folium import folium_static
 import folium
 from functions_app import get_data, clean_col, UFOs_UI
-import io
-from PIL import Image
-import os
-from ipywebrtc import WidgetStream, ImageRecorder
-from ipywidgets.embed import embed_minimal_html
 import branca
 
 if __name__ == '__main__':
