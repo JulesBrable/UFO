@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 import streamlit as st
 from streamlit_folium import folium_static
 import folium
@@ -21,7 +22,75 @@ def get_var(df, var) -> list:
     
     return sorted(list(df[var].unique()))
 
+def create_multiselect(df: pd.DataFrame, col: str) -> st.multiselect:
+    
+    return st.sidebar.multiselect(
+        "",
+        get_var(df, col),
+        label_visibility="collapsed"
+    )
+
+def create_select_slider(df: pd.DataFrame, col: str, measure: str, select_range: list) -> st.select_slider:
+    return st.sidebar.select_slider(
+        f"Choose a {measure} range",
+        options=select_range,
+        value=(min(df[col].unique()),
+               max(df[col].unique())),
+        label_visibility="collapsed"
+    )
+
+#def map_to_png(folium_map, file: str):
+    #return folium_map.save(file)
+
+def create_radio_feature(df: pd.DataFrame, label: str, feature: str, col: str, feature_type: str) -> pd.DataFrame:
+    
+    # creating a radio button in the sidebar: choose btw all values or specific values
+    r = st.sidebar.radio(label,
+                         [f"All {feature.capitalize()}",
+                          f"Select specific {feature}"])
+    
+    # if selected specific values, then create a multiselect container or a select slider, depending on the type of the feature
+    if r == f"Select specific {feature}":
+        
+        ## first case: categorical feature (city, shape) ##
+        if feature_type == "Categorical":
+            
+            list_selected = create_multiselect(df=df, col=col)
+            
+            # if the selector is not empty (ie, the user made a choice), then do filter the df accordingly to this choice
+            if list_selected is not None:
+                return df.loc[df[col].isin(list_selected)]
+            
+            #if not, the return the df without any changes
+            else:
+                return df
+        
+        ## second case: time/date feature (duration, year)##
+        # -> same idea as before, but with a different selector 
+        elif feature_type == "Time/date":
+            
+            select_range = sorted(df[col].unique())
+            
+            if min(df[col].unique()) == max(df[col].unique()):
+            
+                list_selected = st.sidebar.markdown(f"UFOs sightings reports based on your filters contains a single {feature} only **{set(df[col])}**.")
+                return df.loc[df[col] == list_selected]
+
+            else:
+                start, end = create_select_slider(df=df, col=col, measure=feature, select_range=select_range)
+                return df.loc[(df[col] >= start) & (df[col] <= end)]
+            
+        ## else, return an error ## 
+        else:
+            raise TypeError("Unknown feature type, please choose either 'Categorical' or 'Time/date'")
+        
+    else:
+        return df
+
 def popup_html(shape, duration, date):
+    
+    """Creates a beautiful popup for the folium map, using a bit of HTML and CSS style. It allows to give more sepcific information about a given point of the map"""
+    
     html = """<!DOCTYPE html>
     <html>
         <head>
@@ -45,14 +114,18 @@ def popup_html(shape, duration, date):
             </p>
         </body>
     </html>""".format(**locals())
+    
     return html
 
 def create_map(df: pd.DataFrame) -> folium.Map():
     
+    """Creates of folium map with a given dataframe (filtered or not). Also creates personalized markers for each point of the map"""
     
+    # setting default view of the map: mean location and zoom
     location = df['latitude'].mean(), df['longitude'].mean()
     m = folium.Map(location=location, zoom_start=4)
-  
+
+    # adding a personalized appearance for each point of the map
     for lat, lon, city, shape, duration, date in zip(
         df['latitude'],
         df['longitude'],
@@ -80,80 +153,31 @@ def create_map(df: pd.DataFrame) -> folium.Map():
         ).add_to(m)
         
     return m
-      
-def create_multiselect(df: pd.DataFrame, col: str) -> st.multiselect:
-    return st.sidebar.multiselect(
-        "",
-        get_var(df, col),
-        label_visibility="collapsed"
-    )
-
-def create_select_slider(df: pd.DataFrame, col: str, measure: str, select_range: list) -> st.select_slider:
-    return st.sidebar.select_slider(
-        f"Choose a {measure} range",
-        options=select_range,
-        value=(min(df[col].unique()),
-               max(df[col].unique())),
-        label_visibility="collapsed"
-    )
-
-#def map_to_png(folium_map, file: str):
-    #return folium_map.save(file)
-
+              
 def UFOs_UI(df: pd.DataFrame):
     
     df_selected = df.copy()
     
-    r1 = st.sidebar.radio("Country:", ["All Countries", "Select specific countries"])
+    # select country
+    df_selected = create_radio_feature(df=df_selected, label="Country of sighting", feature="countries", feature_type="Categorical", col="country")
     
-    if r1 == "Select specific countries":
-        countries = create_multiselect(df=df_selected, col="country")
+    # specific case for the USA: if it is the only country selected, then show an additional filter: the state
+    if ("United States Of America (The)" in get_var(df_selected, "country")) & (len(get_var(df_selected, "country"))==1):
         
-        if countries is not None:
-            df_selected = df_selected.query('(country in @countries)')
+        df_selected = create_radio_feature(df=df_selected, label="State of sighting", feature="states", feature_type="Categorical", col="state")
+        
+    # select city
+    df_selected = create_radio_feature(df=df_selected, label="City of sighting", feature="cities", feature_type="Categorical", col="city")
     
-    r2 = st.sidebar.radio("City:", ["All Cities", "Select specific cities"])
+    # select shape
+    df_selected = create_radio_feature(df=df_selected, label="Shape of the UFO", feature="shapes", feature_type="Categorical", col="shape")
+
+    # select duration
+    df_selected = create_radio_feature(df=df_selected, label="Duration of the episode (in seconds):", feature="durations", feature_type="Time/date", col="duration_seconds")
     
-    if r2 == "Select specific cities":
-        cities = create_multiselect(df=df_selected, col="city")
-
-        if cities is not None:
-            df_selected = df_selected.query('(city in @cities)')
-
-    r3 = st.sidebar.radio("UFO shape:", ["All Shapes", "Select specific shapes"])
-
-    if r3 == "Select specific shapes":
-        shapes = create_multiselect(df=df_selected, col="shape")
-
-        if shapes is not None:
-            df_selected = df_selected.query('(shape in @shapes)')
-
-    select_range_duration = sorted(df_selected['duration_seconds'].unique())       
-    r4 = st.sidebar.radio("Duration of the episode (in seconds):", ["All Durations", "Select a specific duration"])
+    # select duration
+    df_selected = create_radio_feature(df=df_selected, label="Year/period of sighting:", feature="periods of time", feature_type="Time/date", col="year_UFO")
     
-    if r4 == "Select a specific duration":
-        if min(df_selected['duration_seconds'].unique()) == max(df_selected['duration_seconds'].unique()):
-            
-            durations = st.sidebar.markdown(f"UFOs sightings reports based on your filters contains a single duration only **{set(df_selected['duration_seconds'])}**.")
-            df_selected = df_selected.query("duration_seconds == @durations")
-
-        else:
-            start_duration, end_duration = create_select_slider(df=df_selected, col="duration_seconds", measure="duration", select_range=select_range_duration)
-            df_selected = df_selected.query("@start_duration <= duration_seconds <= @end_duration")
-    
-    select_range_date = sorted(df_selected['year_UFO'].unique())
-    r5 = st.sidebar.radio("Period:", ["All Time", "Select a specific period of time"])
-    
-    if r5 == "Select a specific period of time":
-        if min(df_selected['year_UFO'].unique()) == max(df_selected['year_UFO'].unique()):
-            
-            date = st.sidebar.markdown(f"UFOs sightings reports based on your filters were made during a single year only **{set(df_selected['year_UFO'])}**.")
-            df_selected = df_selected.query("year_UFO == @date")
-            
-        else:
-            start_date, end_date = create_select_slider(df=df_selected, col="year_UFO", measure="date range", select_range=select_range_date)
-            df_selected = df_selected.query("@start_date <= year_UFO <= @end_date")
-            
     main_button = st.sidebar.button("Submit here 👈")
     if not main_button:       
         st.image("pictures/warning_ufo.jpeg", width = 500)
@@ -181,12 +205,13 @@ def UFOs_UI(df: pd.DataFrame):
         #image_recorder = ImageRecorder(stream=widget_stream)
         #display(image_recorder)
         cols = ['datetime', 'city', 'country', 'shape', 'duration_seconds', 'comments']
-        df_selected = df_selected[cols]
-        st.dataframe(df_selected)
+        df_to_export = df_selected[cols]
+        st.dataframe(df_to_export)
         
         #@st.cache
-        csv = df_selected.to_csv().encode('utf-8')
-
+        csv = df_to_export.to_csv().encode('utf-8')
+        
+        # possibility for the users to download data based on his filters
         st.download_button(
             label="Export selected data as CSV",
             data=csv,
@@ -194,4 +219,16 @@ def UFOs_UI(df: pd.DataFrame):
             mime='text/csv',
         )
         
+        with st.expander("chart"):
+            fig = plt.figure(figsize=(10, 4))
+            ax = sns.countplot(x="year_UFO", data=df_selected)
+            for ind, label in enumerate(ax.get_xticklabels()):
+                if ind % 10 == 0:  # every 10th label is kept
+                    label.set_visible(True)
+                else:
+                    label.set_visible(False)
+            plt.xticks(rotation=45)
+            st.pyplot(fig)
+            
         df_selected = df
+        

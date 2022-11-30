@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 import streamlit as st
 from streamlit_folium import folium_static
 import folium
@@ -11,13 +12,13 @@ if __name__ == '__main__':
     
     st.set_page_config(
         page_title="UFOs Sightings Reports Map",
-        page_icon="🛸",
+        page_icon="🛸", # this icon appears on the tab of the web page
         layout="centered",
         initial_sidebar_state="expanded",
         menu_items={
             'Report a bug': "https://github.com/JulesBrable/UFO/issues/new",
             'About': """ 
-            If you want to read more about the project, you be interested in going to the corresponding
+            If you want to read more about the project, you would be interested in going to the corresponding
             [GitHub](https://github.com/JulesBrable/UFO) repository.
             
             Contributions:
@@ -34,7 +35,7 @@ if __name__ == '__main__':
     #@st.cache(allow_output_mutation=True) # for improved performance in (re-)loading data
     df = get_data("data/ufo_sightings_clean.csv")
     
-    cols_list = ['country', 'city', 'shape']
+    cols_list = ['country', 'city', 'shape', 'state']
     df[cols_list] = df[cols_list].apply(clean_col)
     
     df['year_UFO'] = pd.DatetimeIndex(df['datetime']).year
