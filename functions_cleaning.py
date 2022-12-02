@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 from geopy.point import Point
 from geopy.geocoders import Nominatim
+import re
+import requests
+from bs4 import BeautifulSoup
 
 def count_na(df: pd.DataFrame) -> pd.DataFrame:
     
@@ -56,24 +59,24 @@ def replace_exceptions(row: str) -> str or float:
     else:
         return np.nan
 
-def print_city_unique():
+def print_city_unique(df):
     return print(len(set(df['city'])))
 
 def clean_city_col(df: pd.DataFrame, col='city') -> pd.DataFrame:
     
-    print_city_unique()
+    print_city_unique(df)
     
     # removing parentheses and their content for the column "city"
     df[col] = df[col].str.replace(r"\(.*\)","", regex=True)
-    print_city_unique()
+    print_city_unique(df)
     
     # removing non-alphanumeric characters from the strings for the column "city", including numbers
     df[col] = [re.sub('[^\w\s]|\d+', '', x) for x in df[col]]
-    print_city_unique()
+    print_city_unique(df)
     
     # turning the first letter of each city name into a capital letter
     df[col] = df[col].str.title()
-    print_city_unique()
+    print_city_unique(df)
     
     #If a row contains only one word, suppress all white spaces within it
     #If a row contains 2 words or more, doe nothing
@@ -83,3 +86,42 @@ def clean_city_col(df: pd.DataFrame, col='city') -> pd.DataFrame:
     df = df.drop(['test'], axis=1)
     return df
 
+def get_table_bs4(URL):
+    
+    # Creating the parser
+    URL = URL
+    page = requests.get(URL)
+    soup = BeautifulSoup(page.content, "html.parser")
+    l = []
+    for table in soup.find_all('table'):
+        l.append(table.get('class'))
+    s = str(l).replace('[', '').replace(']', '').replace("'", '').replace(",", '')
+    print(s)
+    
+    return soup.find('table', class_=s)
+
+def alpha_code_reverse(soup_table, feature: str, ncol_feature: int, ncol_alpha: int) -> pd.DataFrame:
+    
+    df = pd.DataFrame(columns=[feature, 'Alpha-2 code'])
+              
+    # collecting feature's names and the feature's codes
+    for row in soup_table.tbody.find_all('tr'):
+         # STEPS FOR ONE ROW :
+
+        # find all data for each column
+        columns = row.find_all('td')
+
+        # if the row is not empty, we get the 2 informations that we want, ie the desired feature and alpha-2 code
+        if(columns != []):
+            feat = columns[ncol_feature].text.strip().lower()
+            alpha_2_code = columns[ncol_alpha].text.strip().lower()
+
+            # then, we merge these 2 informations together
+            df_to_append = pd.DataFrame({feature: feat,
+                                         'Alpha-2 code': alpha_2_code},
+                                       index=[0])
+        
+            # and finally append to the "main" dataframe
+            df = pd.concat([df, df_to_append], ignore_index=True)
+            
+    return df
