@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.express as px
 import streamlit as st
 from streamlit_folium import folium_static
 import folium
@@ -39,9 +40,10 @@ if __name__ == '__main__':
     df[cols_list] = df[cols_list].apply(clean_col)
     
     df['year_UFO'] = pd.DatetimeIndex(df['datetime']).year
+    
+    st.sidebar.subheader(f"Please filter the desired features:")
         
     with st.container():
-        
         st.header(
             f"Mapping of UFO sightings reports from {min(df['year_UFO'])} to {max(df['year_UFO'])}"
         )
