@@ -8,7 +8,6 @@ from streamlit_folium import folium_static
 import folium
 import branca
 
-
 def get_data(file):
     
     return pd.read_csv(file)
@@ -226,7 +225,7 @@ def UFOs_UI(df: pd.DataFrame):
         st.markdown("You may also want to download the data that you have just filtered (here is a glance at these data :")
         
         cols = ['datetime', 'city', 'country', 'shape', 'duration_seconds', 'comments']
-        df_to_export = df_selected[cols]
+        df_to_export = df_selected[cols].reset_index(drop = True)
         st.dataframe(df_to_export)
         
         #@st.cache
@@ -243,7 +242,7 @@ def UFOs_UI(df: pd.DataFrame):
     with tab2: # map
         
         if not main_button:
-            st.info("Please submit your choices in the sidebar panel so as to view the corresponding interactive map 🥶")
+            st.info("Please submit your choices within the sidebar panel so as to view the corresponding interactive map 🥶")
             st.image("pictures/warning_ufo.jpeg", width = 500)
 
         if main_button:
@@ -281,17 +280,17 @@ def UFOs_UI(df: pd.DataFrame):
             fig2 = hist_chart(df_selected, "shape", "Shape", orientation = "h", sort_hist = True)
             st.plotly_chart(fig2)
         
-        with col2:
+        with col2: # summary stat for "duration" (can't visualize it with a chart)
             
             st.text("")
             st.text("")
             st.markdown("Summary statistics of sightings duration:")
 
             desc_duration = pd.DataFrame(
-                df["duration_seconds"].describe().rename_axis('Statistics').reset_index()
+                df_selected["duration_seconds"].describe().rename_axis('Statistics').reset_index()
             )
             
-            # CSS to hide dataframe index
+            # using CSS to hide dataframe index
             hide_table_row_index = """
             <style>
             thead tr th:first-child {display:none}
@@ -301,7 +300,6 @@ def UFOs_UI(df: pd.DataFrame):
 
             # Inject CSS with Markdown
             st.markdown(hide_table_row_index, unsafe_allow_html=True)
-            st.table(desc_duration.rename(columns={"duration_seconds": "Duration (seconds)"}))
+            st.table(desc_duration.drop(desc_duration.index[0]).rename(columns={"duration_seconds": "Duration (seconds)"}))
             
     df_selected = df
-        
