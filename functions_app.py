@@ -7,6 +7,7 @@ import streamlit as st
 from streamlit_folium import folium_static
 import folium
 import branca
+from wc_functions import mywc, display_wc
 
 def get_data(file):
     
@@ -188,7 +189,8 @@ def hist_chart(df, col, label, orientation = "v", sort_hist = False, rotate = 0)
 def UFOs_UI(df: pd.DataFrame):
     
     # creation of different tabs for the different corresponding sections
-    tab1, tab2, tab3 = st.tabs(["Information", "Interactive Map", "Data Visualization"])
+    tab1, tab2, tab3, tab4 = st.tabs(
+        ["Information", "Interactive Map", "Data Visualization", "Word Cloud"])
     
     df_selected = df.copy()
     
@@ -301,5 +303,10 @@ def UFOs_UI(df: pd.DataFrame):
             # Inject CSS with Markdown
             st.markdown(hide_table_row_index, unsafe_allow_html=True)
             st.table(desc_duration.drop(desc_duration.index[0]).rename(columns={"duration_seconds": "Duration (seconds)"}))
+    with tab4: # wordcloud
+        st.markdown("**Word cloud of all comments corresponding to UFO sightings according to your filters:**")
+        wordcloud = mywc(df=df_selected, col="comments", words_update=['39s', 'quot'])
+        fig, ax = display_wc(wordcloud=wordcloud)
+        st.pyplot(fig)
             
     df_selected = df
