@@ -1,16 +1,5 @@
 # UFOs sighting reports worldwide
 
-<!-- PROJECT LOGO -->
-<br />
-<p align="center">
-
-  <h3 align="center">UFOs sighting reports worldwide</h3>
-
-  <br /><br />
-  </p>
-</p>
-<br>
-
 ## Table of Contents
 
 * [About the Project](#about_the_project)
