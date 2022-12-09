@@ -100,7 +100,9 @@ def get_table_bs4(URL):
     
     return soup.find('table', class_=s)
 
-def alpha_code_reverse(soup_table, feature: str, ncol_feature: int, ncol_alpha: int) -> pd.DataFrame:
+def code_reverse_feature(soup_table, feature: str,
+                         ncol_feature: int, ncol_alpha: int,
+                         th=False, code: str = None) -> pd.DataFrame:
     
     df = pd.DataFrame(columns=[feature, 'Alpha-2 code'])
               
@@ -110,18 +112,24 @@ def alpha_code_reverse(soup_table, feature: str, ncol_feature: int, ncol_alpha: 
 
         # find all data for each column
         columns = row.find_all('td')
+        if th:
+            columns2 = row.find_all('th')
 
-        # if the row is not empty, we get the 2 informations that we want, ie the desired feature and alpha-2 code
+        # if the column is not empty, we get the 2 informations that we want, ie the desired feature and alpha-2 code
         if(columns != []):
             feat = columns[ncol_feature].text.strip().lower()
             alpha_2_code = columns[ncol_alpha].text.strip().lower()
+            if th:
+                fips = columns2[0].text.strip()
 
             # then, we merge these 2 informations together
             df_to_append = pd.DataFrame({feature: feat,
                                          'Alpha-2 code': alpha_2_code},
                                        index=[0])
+            if th:
+                df_to_append[code] = fips
         
             # and finally append to the "main" dataframe
             df = pd.concat([df, df_to_append], ignore_index=True)
-            
+             
     return df
