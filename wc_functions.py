@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 def word_count(stri):
     
-    """Function that counts the occurrence of different words within a string"""
+    """Function that counts the occurrence of different words within a string, and return a dictionary"""
     
     counts = dict()
     words = stri.split()
@@ -19,7 +19,7 @@ def word_count(stri):
 
 def mywc(df: pd.DataFrame, col: str, words_update: list, background = "white", mask = None, colors=None):
     
-    """Creates a wordcloud with WordCloud package."""
+    """Creates a wordcloud with WordCloud package"""
     
     MYSTOPWORDS = STOPWORDS.update(words_update) # adding stopwords
     all_comments = " ".join(str(s) for s in df[col]) # joining comments all together
@@ -28,8 +28,8 @@ def mywc(df: pd.DataFrame, col: str, words_update: list, background = "white", m
     # generate the wordcloud with arbitrary predefined parameters
     wordcloud = WordCloud(scale=3,
                           stopwords=MYSTOPWORDS,
-                          background_color=background,
-                          mask=mask,
+                          background_color=background, 
+                          mask=mask, # add an image as a mask (for us, an UFO)
                           width=1600,
                           height=800, 
                           collocations=False,
@@ -39,6 +39,8 @@ def mywc(df: pd.DataFrame, col: str, words_update: list, background = "white", m
     return wordcloud
 
 def display_wc(wordcloud):
+    
+    """Plot the wordcloud"""
     
     fig, ax = plt.subplots(figsize=(10,6))
     ax.imshow(wordcloud, interpolation='bilinear')
