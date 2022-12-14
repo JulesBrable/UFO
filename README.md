@@ -19,7 +19,7 @@ In this repository, you will find the following files:
 * A notebook (.ipynb), explaining in more depth our data cleaning/wrangling and modeling approaches. This notebook contains some of our results, but the results will also be found in our webapp (please see below), especially with regards to the data visualization.
 * Some modules (.py), containing the functions we created and used during our data analysis, modeling, and visualization; and the scripts used for building our web application.
 
-The underlying data comes from a [public website](https://www.mavenanalytics.io/data-playground).
+The underlying data comes from a [public website](https://www.mavenanalytics.io/data-playground). We also used webscrapping to obtain additional components that were missing from the original dataset.
 
 We would also like to thank our Python class teachers, C.Laroche and L.Galiana, for the support and knowledge they gave us.
 
