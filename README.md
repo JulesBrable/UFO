@@ -26,7 +26,9 @@ We would also like to thank our Python class teachers, C.Laroche and L.Galiana, 
 ## Problematic
 UFOs have been the source of many stories and legends for hundreds of years. They make us wonder if we humans are alone in the universe. This question is inherent to humans, because by nature, human beings can be curious and fascinated by the unknown.
 
-Furthermore, when a person thinks he or she sees something unknown in the sky, there are two options: either it is explainable (on scientific or logical grounds), or it is not (in which case it is a UFO (?)). However, a person's judgment to recognize and identify whether what he or she has seen is or is not unknown can be altered by many factors, for example: cognitive bias, geographic context, or temporal context. The main issue for us has been to identify some explanations for the reports of UFO sightings around the world from the 20th century to 2014.
+Furthermore, when a person thinks he or she sees something unknown in the sky, there are two options: either it is explainable (on scientific or logical grounds), or it is not (in which case it is a UFO (?)). However, a person's judgment to recognize and identify whether what he or she has seen is or is not unknown can be altered by many factors, for example: cognitive bias, geographic context, or temporal context. The main issue for us has been to identify some explanations for the reports of UFO sightings around the world from the begining of the 20th century to 2014, and to identify some clusters between the US states.
+
+Finally, we also aimed at creating a visualization tool for these reports, by coding a Web Application.
 
 <br>
 
