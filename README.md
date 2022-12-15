@@ -48,7 +48,7 @@ pip install -r requirements.txt
 
 ### Launching the app
 
-Once the installation is complete, you can start the web app either:
+Once the installation is complete, you can start the application either:
 
 * Using the command line:
 ```sh
@@ -59,8 +59,13 @@ streamlit run ./UFOs_cartography.py
 
 ### Usage
 
-We chose to developp a web application using [Streamlit](https://streamlit.io), which is open-source and user-friendly Python framework. This package can be powerful and flexible: for example, we used some CSS/HTML/Boostrap components for styling the app. We made the app interface as simple as possible, while keeping a certain level of personalization. Indeed, the main idea of this application is to allow flexibility and scalability for anyone interested in discovering the origin of UFO sightings and finding resources to reflect on the causes of these reports. We deployed our app on [Streamlit Cloud](https://streamlit.io/cloud), which is free access.
-When the application is launched, the user must make choices from a number of filters. Then, he will submit his entries and can observe the corresponding results. He can freely navigate between the different panels of the application, according to his interest/the information he is looking for.
+We chose to developp a web application using [Streamlit](https://streamlit.io), which is open-source and user-friendly Python framework. We made the app interface as simple as possible, while keeping a certain level of personalization. Indeed, the main idea of this application is to allow flexibility and scalability for anyone interested in discovering the origin of UFO sightings and finding resources to reflect on the causes of these reports. We deployed our app on [Streamlit Cloud](https://streamlit.io/cloud), which is free access.
+When the application is launched, the user must make choices from a number of filters. Then, he will submit his entries and can observe the corresponding results. He can freely navigate between the different panels of the application, according to his interest.
+
+<br>
+
+## Notebook
+
 
 <br>
 
